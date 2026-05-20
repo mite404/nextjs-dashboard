@@ -1,4 +1,4 @@
-# React Routing Concepts — Cheatsheet
+# React Routing Framework Concepts — Cheatsheet
 
 > Add lessons-learned below each section as you go.
 
@@ -6,7 +6,8 @@
 
 ## 1. Server vs Client Components
 
-**Rule of thumb:** needs `useState` / `onClick` / browser APIs → client. Just fetching data and rendering HTML → server.
+**Rule of thumb:** needs `useState` / `onClick` / browser APIs → client. Just fetching data and
+rendering HTML → server.
 
 | | Server Component | Client Component |
 |---|---|---|
@@ -31,16 +32,20 @@ function LikeButton() {
 }
 ```
 
-> **Analogy:** Server component = kitchen cooks and sends a finished plate. Client component = ingredients sent to the table, assembled there.
+> [!TIP]
+> **Analogy:** Server component = kitchen cooks and sends a finished plate. Client
+> component = ingredients sent to the table, assembled there.
 
 ---
 
 ## 2. File-based vs Code-based Routing
 
 ### File-based (Next.js, Astro, SvelteKit)
-The folder structure **is** the URL map. Move a file → change the URL.
 
-```
+The folder structure **is** the URL map. Move a file → change the
+URL.
+
+```text
 app/
   page.tsx           →  /
   about/
@@ -51,7 +56,9 @@ app/
 ```
 
 ### Code-based (React Router library mode)
-A `routes.ts` config file maps URLs to components. Move a file → update one line, URL unchanged.
+
+A `routes.ts` config file maps URLs to components. Move a file → update one line,
+URL unchanged.
 
 ```ts
 // routes.ts
@@ -64,9 +71,12 @@ export default [
 ] satisfies RouteConfig;
 ```
 
-> **Analogy:** File-based = bookshelf (location IS the address). Code-based = library catalog (entry points to wherever the book lives).
+> [!TIP]
+> **Analogy:** File-based = bookshelf (location IS the address). Code-based = library
+> catalog (entry points to wherever the book lives).
 
-**When code-based wins:** renaming routes without moving files, complex auth guards, feature-flag routing.
+**When code-based wins:** renaming routes without moving files, complex auth guards, feature-flag
+routing.
 **When file-based wins:** legibility for new devs, most apps where route = component anyway.
 
 ---
@@ -95,6 +105,7 @@ async function Page() {
 }
 ```
 
+> [!NOTE]
 > **Learn:** App Router. Skim Pages Router so you can read old codebases.
 
 ---
@@ -126,7 +137,9 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 ```
 
-> Component never touches the DB — it only calls `useLoaderData()` and submits `<Form>`. Data logic stays out of the component entirely.
+> [!IMPORTANT]
+> Component never touches the DB — it only calls `useLoaderData()` and submits
+> `<Form>`. Data logic stays out of the component entirely.
 
 ---
 
@@ -134,7 +147,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 Three different layers expressing the same idea:
 
-```
+```text
 SERVER                          │  CLIENT
 ────────────────────────────────┼──────────────────────────────
 React Router:                   │
@@ -150,10 +163,14 @@ Both:                           │
   secrets never leave here      │  needs the DOM to exist
 ```
 
-**Key distinction:** `loader`/`action` are triggered by routing events. `"use server"` can be called like a regular function from anywhere.
+**Key distinction:** `loader`/`action` are triggered by routing events. `"use server"` can be called
+like a regular function from anywhere.
 
-> In React Router projects: loader/action **are** your server functions — no `"use server"` directive needed.
-> In Next.js projects: async Server Components replace loaders, Server Actions replace action functions.
+> [!NOTE]
+> In React Router projects: loader/action **are** your server functions — no
+> `"use server"` directive needed.
+> In Next.js projects: async Server Components replace loaders, Server Actions replace
+> action functions.
 
 ---
 
@@ -177,7 +194,76 @@ export async function action({ request }) {
 }
 ```
 
-> The `*` wildcard = "catch anything after this prefix." The `$` in the filename is React Router's way of expressing that wildcard in file-based mode.
+> [!NOTE]
+> The `*` wildcard = "catch anything after this prefix." The `$` in the filename is
+> React Router's way of expressing that wildcard in file-based mode.
+
+---
+
+## 7. clsx — Conditional className Utility
+
+Tiny (239 B) utility for building `className` strings conditionally. Drop-in replacement
+for the older `classnames` package but smaller and faster.
+
+**Install:** `npm i clsx`
+
+### Why not just template strings?
+
+Template strings get ugly when you have more than one conditional class, especially with
+Tailwind's long utility names.
+
+```tsx
+// Hard to read
+<span
+  className={`inline-flex rounded-full px-2 py-1 text-sm ${status === 'paid' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-500'}`}
+>
+
+// Clean with clsx
+<span
+  className={clsx(
+    'inline-flex rounded-full px-2 py-1 text-sm',
+    {
+      'bg-gray-100 text-gray-500': status === 'pending',
+      'bg-green-500 text-white': status === 'paid',
+    },
+  )}
+>
+```
+
+### Usage patterns
+
+```tsx
+import clsx from 'clsx';
+
+// Strings (always included)
+clsx('foo', 'bar'); // => 'foo bar'
+
+// Conditional strings
+clsx('foo', isActive && 'bar'); // => 'foo bar' (or just 'foo')
+
+// Object syntax (keys included if value is truthy)
+clsx({ 'bg-green-500': isPaid, 'bg-gray-100': isPending });
+
+// Mixed arguments
+clsx('base-class', [1 && 'conditional'], { 'extra': true });
+```
+
+### clsx/lite — string-only variant
+
+If you only use the string / conditional-string pattern (no objects or arrays), import
+`clsx/lite` to shave the bundle down to 140 B. Non-string arguments are ignored in this
+mode.
+
+```tsx
+import clsx from 'clsx/lite';
+
+clsx('hello', true && 'foo', false && 'bar'); // => 'hello foo'
+clsx({ foo: true }); // => '' (objects ignored!)
+```
+
+> [!TIP]
+> **When to use:** Any time you assemble `className` from more than one source —
+> props, state, or mapped data. Essential with Tailwind CSS.
 
 ---
 
@@ -185,4 +271,4 @@ export async function action({ request }) {
 
 _Add your own notes here as you go._
 
-- 
+-

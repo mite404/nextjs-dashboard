@@ -18,6 +18,7 @@
 # misc
 .DS_Store
 *.pem
+.rumdl_cache
 
 # debug
 npm-debug.log*
